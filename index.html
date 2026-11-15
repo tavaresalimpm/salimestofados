@@ -186,6 +186,9 @@ footer b{color:#cfe3f5}
       <input id="data" type="date">
       <label for="obs">Observações (manchas, pets, etc.)</label>
       <textarea id="obs"></textarea>
+      <label for="fotos">Foto do estofado (obrigatório)</label>
+      <input id="fotos" type="file" accept="image/*" multiple>
+      <p class="nota" id="fotos-info">Tire ou escolha 1 ou mais fotos do estofado que você quer limpar. Elas ajudam a gente a avaliar o seu caso.</p>
       <p id="erro"></p>
       <button class="btn btn-wa enviar" onclick="enviar()">Enviar pedido pelo WhatsApp</button>
     </div>
@@ -257,9 +260,17 @@ function enviar(){
   const sel = itens.map((it,i)=>q[i]?`• ${q[i]}x ${it.n}`:null).filter(Boolean);
   const erro = document.getElementById("erro");
   if(!sel.length || !v("nome") || !v("tel")){erro.textContent="Escolha ao menos um item e preencha nome e telefone.";return}
+  const fotos = [...document.getElementById("fotos").files];
+  if(!fotos.length){erro.textContent="Anexe pelo menos uma foto do estofado para finalizar o orçamento.";document.getElementById("fotos").focus();return}
   erro.textContent="";
   const msg = `Olá! Gostaria de um orçamento de limpeza de estofados.\n\n${sel.join("\n")}\n\nTotal estimado: ${document.getElementById("total").textContent}\n\nNome: ${v("nome")}\nTelefone: ${v("tel")}\nEndereço: ${v("end")||"-"}\nData preferida: ${v("data")||"-"}\nObs.: ${v("obs")||"-"}`;
-  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,"_blank");
+  if(navigator.canShare && navigator.canShare({files:fotos})){
+    navigator.share({files:fotos,text:msg}).catch(()=>{});
+    erro.textContent="Na tela que abriu, escolha o WhatsApp e a conversa da Salim Estofados (31 99302-7924) para enviar o pedido com as fotos.";
+    return;
+  }
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg+"\n\n(Enviei "+fotos.length+" foto(s) do estofado, vou anexar nesta conversa agora.)")}`,"_blank");
+  erro.textContent="Quase lá! No WhatsApp, anexe as fotos do estofado na conversa para finalizar o pedido.";
 }
 render();
 </script>
