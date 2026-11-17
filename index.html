@@ -105,6 +105,7 @@ input,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radiu
 input:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px}
 textarea{min-height:70px;resize:vertical}
 #erro{color:#d64545;font-size:14px;margin:10px 0 0;font-weight:600}
+#erro.sucesso{color:#198754}
 .enviar{width:100%;margin-top:16px;font-size:17px;padding:15px}
 
 .bandeira{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:18px;color:#fff;padding:34px 24px;text-align:center}
@@ -336,6 +337,7 @@ function enviar(){
   const v = id => document.getElementById(id).value.trim();
   const sel = flat.map((it,i)=>q[i]?`• ${q[i]}x ${it.n} (${grupos[it.g].t.toLowerCase()})`:null).filter(Boolean);
   const erro = document.getElementById("erro");
+  erro.classList.remove("sucesso");
   if(!sel.length || !v("nome") || !v("tel")){erro.textContent="Escolha ao menos um item e preencha nome e telefone.";return}
   const fotos = [...document.getElementById("fotos").files];
   if(!fotos.length){erro.textContent="Anexe pelo menos uma foto do estofado para finalizar o orçamento.";document.getElementById("fotos").focus();return}
@@ -343,14 +345,20 @@ function enviar(){
   const msg = `Olá! Gostaria de um orçamento de limpeza/impermeabilização de estofados.\n\n${sel.join("\n")}\n\nTotal estimado: ${document.getElementById("total").textContent}\n\nNome: ${v("nome")}\nTelefone: ${v("tel")}\nEndereço: ${v("end")||"-"}\nData preferida: ${v("data")||"-"}\nObs.: ${v("obs")||"-"}`;
   if(navigator.canShare && navigator.canShare({files:fotos})){
     navigator.share({files:fotos,text:msg}).catch(()=>{});
-    erro.textContent="Na tela que abriu, escolha o WhatsApp e a conversa da Salim Estofados (31 99302-7924) para enviar o pedido com as fotos.";
+    erro.classList.add("sucesso");
+    erro.textContent="Na tela que abriu, escolha o WhatsApp e toque em Enviar. Assim que recebermos, vamos atender você o mais rápido possível.";
     return;
   }
-  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg+"\n\n(Enviei "+fotos.length+" foto(s) do estofado, vou anexar nesta conversa agora.)")}`,"_blank");
-  erro.textContent="Quase lá! No WhatsApp, anexe as fotos do estofado na conversa para finalizar o pedido.";
+  const janela = window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg+"\n\n(Enviei "+fotos.length+" foto(s) do estofado, vou anexar nesta conversa agora.)")}`,"_blank");
+  if(janela){
+    erro.classList.add("sucesso");
+    erro.textContent="No WhatsApp, anexe as fotos e toque em Enviar. Assim que recebermos, vamos atender você o mais rápido possível.";
+  } else {
+    erro.textContent="O WhatsApp não abriu. Permita a abertura da nova guia e tente novamente.";
+  }
 }
 render();
 </script>
 
 </body>
-</html>
+  </html>
